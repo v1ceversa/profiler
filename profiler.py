@@ -4,10 +4,10 @@ import node
 class Profiler:
 
     @staticmethod
-    def get_int_vid_amount(vid_dur, perc, lim):
+    def get_int_vid_amount(vid_dur,lim):
         amount_of_videos = []
         for i in range(len(vid_dur)):
-            amount_of_videos.append(math.floor(lim*perc[i]/vid_dur[i]))
+            amount_of_videos.append(math.floor(lim*vid_dur[i]['percentage']/vid_dur[i]['video_dur']))
         return amount_of_videos
 
     @staticmethod
@@ -57,23 +57,28 @@ class Profiler:
         return sch
 
     @staticmethod
-    def get_schedule(vid_dur, perc, lim):
-        amount_of_videos = Profiler.get_int_vid_amount(vid_dur, perc, lim)
+    def get_schedule(vid_dur, lim):
+        amount_of_videos = Profiler.get_int_vid_amount(vid_dur, lim)
         rest = lim
         for i in range(len(vid_dur)):
-            rest -= amount_of_videos[i]*vid_dur[i]
+            rest -= amount_of_videos[i]*vid_dur[i]['video_dur']
         if rest != 0:
-            nod = node.Node(0,vid_dur,rest)
+            nod = node.Node(videos_dur=vid_dur,lim=rest)
             rest_list = nod.get_req_list()
             for r in rest_list:
-                amount_of_videos[vid_dur.index(r)] += 1
-        return Profiler.interleave(amount_of_videos)
+                for i in range(len(vid_dur)):
+                    if vid_dur[i]['video_id'] == r:
+                        amount_of_videos[i] += 1
+        interl_list = Profiler.interleave(amount_of_videos)
+        schedule = []
+        for i in interl_list:
+            schedule.append(vid_dur[i]['video_id'])
+        return schedule
 
 
-vide_dur = [1000, 3000, 4235, 5000]
-per = [0.25, 0.35, 0.2, 0.2]
+vide_dur = [{"video_dur" : 1000, "video_id" : 10, "percentage" : 0.25},
+            {"video_dur" : 3000, "video_id": 11, "percentage" : 0.35},
+            {"video_dur" : 4235, "video_id": 12, "percentage" : 0.2},
+            {"video_dur" : 5000, "video_id": 13, "percentage" : 0.2}]
 lims = 30000
-print(Profiler.get_schedule(vide_dur,per,lims))
-
-lz = Profiler.interleave(z)
-print(lz)
+print(Profiler.get_schedule(vide_dur,lims))
